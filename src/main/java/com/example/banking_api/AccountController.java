@@ -26,7 +26,7 @@ public class AccountController {
         this.accountService = accountService;
     }
 
-    // Create a bank account
+    // Create a new bank account
     @PostMapping
     public ResponseEntity<Account> createAccount(
             @RequestBody Account account) {
@@ -49,7 +49,7 @@ public class AccountController {
         }
     }
 
-    // Get all accounts
+    // Get all bank accounts
     @GetMapping
     public ResponseEntity<List<Account>> getAllAccounts() {
         return ResponseEntity.ok(
@@ -57,7 +57,7 @@ public class AccountController {
         );
     }
 
-    // Get account by ID
+    // Get an account by ID
     @GetMapping("/{id}")
     public ResponseEntity<Account> getAccountById(
             @PathVariable Long id) {
@@ -76,7 +76,7 @@ public class AccountController {
         }
     }
 
-    // Get account by account number
+    // Get an account by account number
     @GetMapping("/number/{accountNumber}")
     public ResponseEntity<Account> getAccountByNumber(
             @PathVariable String accountNumber) {
@@ -95,7 +95,7 @@ public class AccountController {
         }
     }
 
-    // Deposit money
+    // Deposit money into an account
     @PostMapping("/{id}/deposit")
     public ResponseEntity<Account> deposit(
             @PathVariable Long id,
@@ -118,7 +118,7 @@ public class AccountController {
         }
     }
 
-    // Withdraw money
+    // Withdraw money from an account
     @PostMapping("/{id}/withdraw")
     public ResponseEntity<Account> withdraw(
             @PathVariable Long id,
@@ -139,5 +139,39 @@ public class AccountController {
                     exception
             );
         }
+    }
+
+    // Transfer money between two accounts
+    @PostMapping("/transfer")
+    public ResponseEntity<Map<String, String>> transfer(
+            @RequestBody TransferRequest request) {
+
+        try {
+            accountService.transfer(
+                    request.fromAccountId(),
+                    request.toAccountId(),
+                    request.amount()
+            );
+
+            return ResponseEntity.ok(Map.of(
+                    "status", "SUCCESS",
+                    "message", "Transfer completed successfully"
+            ));
+
+        } catch (IllegalArgumentException exception) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    exception.getMessage(),
+                    exception
+            );
+        }
+    }
+
+    // Request data for a bank transfer
+    public record TransferRequest(
+            Long fromAccountId,
+            Long toAccountId,
+            BigDecimal amount
+    ) {
     }
 }
