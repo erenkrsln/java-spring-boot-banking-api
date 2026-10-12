@@ -1,8 +1,10 @@
 
 package com.example.banking_api;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +26,7 @@ public class AccountController {
         this.accountService = accountService;
     }
 
-    // Create a new bank account
+    // Create a bank account
     @PostMapping
     public ResponseEntity<Account> createAccount(
             @RequestBody Account account) {
@@ -47,16 +49,15 @@ public class AccountController {
         }
     }
 
-    // Get all bank accounts
+    // Get all accounts
     @GetMapping
     public ResponseEntity<List<Account>> getAllAccounts() {
-
         return ResponseEntity.ok(
                 accountService.getAllAccounts()
         );
     }
 
-    // Get a bank account by ID
+    // Get account by ID
     @GetMapping("/{id}")
     public ResponseEntity<Account> getAccountById(
             @PathVariable Long id) {
@@ -75,7 +76,7 @@ public class AccountController {
         }
     }
 
-    // Get a bank account by account number
+    // Get account by account number
     @GetMapping("/number/{accountNumber}")
     public ResponseEntity<Account> getAccountByNumber(
             @PathVariable String accountNumber) {
@@ -88,6 +89,52 @@ public class AccountController {
         } catch (IllegalArgumentException exception) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
+                    exception.getMessage(),
+                    exception
+            );
+        }
+    }
+
+    // Deposit money
+    @PostMapping("/{id}/deposit")
+    public ResponseEntity<Account> deposit(
+            @PathVariable Long id,
+            @RequestBody Map<String, BigDecimal> request) {
+
+        try {
+            BigDecimal amount = request.get("amount");
+
+            Account updatedAccount =
+                    accountService.deposit(id, amount);
+
+            return ResponseEntity.ok(updatedAccount);
+
+        } catch (IllegalArgumentException exception) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    exception.getMessage(),
+                    exception
+            );
+        }
+    }
+
+    // Withdraw money
+    @PostMapping("/{id}/withdraw")
+    public ResponseEntity<Account> withdraw(
+            @PathVariable Long id,
+            @RequestBody Map<String, BigDecimal> request) {
+
+        try {
+            BigDecimal amount = request.get("amount");
+
+            Account updatedAccount =
+                    accountService.withdraw(id, amount);
+
+            return ResponseEntity.ok(updatedAccount);
+
+        } catch (IllegalArgumentException exception) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
                     exception.getMessage(),
                     exception
             );
