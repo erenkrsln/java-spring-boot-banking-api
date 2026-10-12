@@ -19,7 +19,6 @@ public class AccountService {
 
     @Transactional
     public Account createAccount(Account account) {
-
         if (account == null) {
             throw new IllegalArgumentException(
                 "Account data is required"
@@ -27,14 +26,14 @@ public class AccountService {
         }
 
         if (account.getAccountNumber() == null ||
-            account.getAccountNumber().isBlank()) {
+                account.getAccountNumber().isBlank()) {
             throw new IllegalArgumentException(
                 "Account number is required"
             );
         }
 
         if (account.getAccountHolder() == null ||
-            account.getAccountHolder().isBlank()) {
+                account.getAccountHolder().isBlank()) {
             throw new IllegalArgumentException(
                 "Account holder is required"
             );
@@ -90,5 +89,56 @@ public class AccountService {
                     "Account not found: " + accountNumber
                 )
             );
+    }
+
+    // Validate transaction amounts
+    private BigDecimal validateAmount(BigDecimal amount) {
+        if (amount == null || amount.signum() <= 0) {
+            throw new IllegalArgumentException(
+                "Amount must be greater than zero"
+            );
+        }
+
+        if (amount.scale() > 2) {
+            throw new IllegalArgumentException(
+                "Amount must have at most 2 decimal places"
+            );
+        }
+
+        return amount.setScale(2, RoundingMode.UNNECESSARY);
+    }
+
+    // Deposit money into an account
+    @Transactional
+    public Account deposit(Long accountId, BigDecimal amount) {
+        BigDecimal validAmount = validateAmount(amount);
+
+        Account account = getAccountById(accountId);
+
+        account.setBalance(
+            account.getBalance().add(validAmount)
+        );
+
+        return accountRepository.save(account);
+    }
+
+    // Withdraw money from an account
+    @Transactional
+    public Account withdraw(Long accountId, BigDecimal amount) {
+        BigDecimal validAmount = validateAmount(amount);
+
+        Account account = getAccountById(accountId);
+
+        if (account.getBalance().compareTo(validAmount) < 0) {
+            throw new IllegalArgumentException(
+                "Insufficient funds"
+            );
+        }
+
+        account.setBalance(
+            account.getBalance().subtract(validAmount)
+        );
+
+        return accountRepository.save(account);
     }
 }
