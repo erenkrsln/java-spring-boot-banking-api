@@ -91,7 +91,6 @@ public class AccountService {
             );
     }
 
-    // Validate transaction amounts
     private BigDecimal validateAmount(BigDecimal amount) {
         if (amount == null || amount.signum() <= 0) {
             throw new IllegalArgumentException(
@@ -108,7 +107,6 @@ public class AccountService {
         return amount.setScale(2, RoundingMode.UNNECESSARY);
     }
 
-    // Deposit money into an account
     @Transactional
     public Account deposit(Long accountId, BigDecimal amount) {
         BigDecimal validAmount = validateAmount(amount);
@@ -122,7 +120,6 @@ public class AccountService {
         return accountRepository.save(account);
     }
 
-    // Withdraw money from an account
     @Transactional
     public Account withdraw(Long accountId, BigDecimal amount) {
         BigDecimal validAmount = validateAmount(amount);
@@ -140,5 +137,47 @@ public class AccountService {
         );
 
         return accountRepository.save(account);
+    }
+
+    // Transfer money between two bank accounts
+    @Transactional
+    public void transfer(
+            Long fromAccountId,
+            Long toAccountId,
+            BigDecimal amount) {
+
+        if (fromAccountId == null || toAccountId == null) {
+            throw new IllegalArgumentException(
+                "Both account IDs are required"
+            );
+        }
+
+        if (fromAccountId.equals(toAccountId)) {
+            throw new IllegalArgumentException(
+                "Cannot transfer money to the same account"
+            );
+        }
+
+        BigDecimal validAmount = validateAmount(amount);
+
+        Account fromAccount = getAccountById(fromAccountId);
+        Account toAccount = getAccountById(toAccountId);
+
+        if (fromAccount.getBalance().compareTo(validAmount) < 0) {
+            throw new IllegalArgumentException(
+                "Insufficient funds for transfer"
+            );
+        }
+
+        fromAccount.setBalance(
+            fromAccount.getBalance().subtract(validAmount)
+        );
+
+        toAccount.setBalance(
+            toAccount.getBalance().add(validAmount)
+        );
+
+        accountRepository.save(fromAccount);
+        accountRepository.save(toAccount);
     }
 }
