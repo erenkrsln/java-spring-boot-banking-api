@@ -1,5 +1,5 @@
 
-package com.erenkrsln.banking;
+package com.example.banking_api;
 
 import java.util.Map;
 

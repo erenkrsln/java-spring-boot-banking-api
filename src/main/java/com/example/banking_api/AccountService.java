@@ -75,7 +75,7 @@ public class AccountService {
     public Account getAccountById(Long id) {
         return accountRepository.findById(id)
             .orElseThrow(() ->
-                new IllegalArgumentException(
+                new AccountNotFoundException(
                     "Account not found with ID: " + id
                 )
             );
@@ -85,7 +85,7 @@ public class AccountService {
     public Account getAccountByNumber(String accountNumber) {
         return accountRepository.findByAccountNumber(accountNumber)
             .orElseThrow(() ->
-                new IllegalArgumentException(
+                new AccountNotFoundException(
                     "Account not found: " + accountNumber
                 )
             );

@@ -27,6 +27,31 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleAccountNotFound(
+            AccountNotFoundException exception,
+            WebRequest request) {
+
+        return createErrorResponse(
+                HttpStatus.NOT_FOUND,
+                exception.getMessage(),
+                request
+        );
+    }
+
+    // Business rule violations, e.g. insufficient funds or invalid amounts
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleBadRequest(
+            IllegalArgumentException exception,
+            WebRequest request) {
+
+        return createErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                exception.getMessage(),
+                request
+        );
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidJson(
             HttpMessageNotReadableException exception,
